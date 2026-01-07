@@ -21,13 +21,21 @@ public class AlertService {
 
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
+        LocalDate dueDate = task.getDueDate();
 
-        if (task.getDueDate().isBefore(today)) {
+        if (dueDate.isBefore(today)) {
             saveAlert(task, "HIGH",
                     "Task \"" + task.getTitle() + "\" is overdue");
+            return;
         }
 
-        if (task.getDueDate().isEqual(tomorrow)) {
+        if (dueDate.isEqual(today)) {
+            saveAlert(task, "HIGH",
+                    "Task \"" + task.getTitle() + "\" is due today");
+            return;
+        }
+
+        if (dueDate.isEqual(tomorrow)) {
             saveAlert(task, "LOW",
                     "Task \"" + task.getTitle() + "\" is due tomorrow");
         }
