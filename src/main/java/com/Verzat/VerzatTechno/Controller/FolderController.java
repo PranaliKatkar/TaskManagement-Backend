@@ -25,6 +25,8 @@ public class FolderController {
     @Autowired
     private UserRepo userRepo;
 
+    private final String ADMIN_EMAIL = "admin@gmail.com"; // hardcoded admin
+
     @GetMapping("/user/{email}")
     public List<Folder> getFoldersByUser(@PathVariable String email) {
         User user = userRepo.findByEmail(email)
@@ -39,7 +41,7 @@ public class FolderController {
             throw new RuntimeException("Folder name is required");
         }
 
-        User user = null;
+        User user;
 
         if (folder.getUser() != null && folder.getUser().getEmail() != null) {
             user = userRepo.findByEmail(folder.getUser().getEmail())
@@ -54,13 +56,25 @@ public class FolderController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
         }
 
+        if (ADMIN_EMAIL.equals(user.getEmail())) {
+            System.out.println("Admin is creating a folder");
+        }
+
         folder.setUser(user);
         return folderRepo.save(folder);
     }
 
-
     @DeleteMapping("/{folderId}")
     public void deleteFolder(@PathVariable Long folderId) {
+        User currentUser = userRepo.findByEmail(
+            org.springframework.security.core.context.SecurityContextHolder.getContext()
+                .getAuthentication().getName()
+        ).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (ADMIN_EMAIL.equals(currentUser.getEmail())) {
+            System.out.println("Admin is deleting a folder");
+        }
+
         folderService.deleteFolder(folderId);
     }
 }
