@@ -41,7 +41,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").permitAll()
-        	    .requestMatchers(HttpMethod.DELETE, "/api/folders/**").permitAll()
+        	    .requestMatchers("/api/folders/**").permitAll()
                 .anyRequest().authenticated()
             );
 
