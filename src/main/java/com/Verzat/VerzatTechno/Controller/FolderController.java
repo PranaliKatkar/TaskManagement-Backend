@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.Verzat.VerzatTechno.Entity.Folder;
+import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.FolderRepo;
+import com.Verzat.VerzatTechno.Repository.UserRepo;
 import com.Verzat.VerzatTechno.Service.FolderService;
 
 @RestController
@@ -20,13 +22,16 @@ public class FolderController {
     @Autowired
     private FolderService folderService;
 
-    // ✅ Get all folders
-    @GetMapping
-    public List<Folder> getAllFolders() {
-        return folderRepo.findAll();
+    @Autowired
+    private UserRepo userRepo;
+
+    @GetMapping("/user/{email}")
+    public List<Folder> getFoldersByUser(@PathVariable String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return folderRepo.findByUser(user);
     }
 
-    // ✅ Create folder
     @PostMapping
     public Folder createFolder(@RequestBody Folder folder) {
 
@@ -34,10 +39,21 @@ public class FolderController {
             throw new RuntimeException("Folder name is required");
         }
 
+        User user = null;
+
+        if (folder.getUser() != null && folder.getUser().getEmail() != null) {
+            user = userRepo.findByEmail(folder.getUser().getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
+
+        if (user == null) {
+            throw new RuntimeException("User email is required");
+        }
+
+        folder.setUser(user);
         return folderRepo.save(folder);
     }
 
-    // ✅ Delete folder and its tasks
     @DeleteMapping("/{folderId}")
     public void deleteFolder(@PathVariable Long folderId) {
         folderService.deleteFolder(folderId);
