@@ -40,11 +40,9 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-            	    .requestMatchers("/api/auth/**").permitAll()
-            	    .requestMatchers(HttpMethod.DELETE, "/api/folders/**").permitAll()
-            	    .anyRequest().authenticated()
-            	
-
+                .requestMatchers("/api/**").permitAll()
+        	    .requestMatchers(HttpMethod.DELETE, "/api/folders/**").permitAll()
+                .anyRequest().authenticated()
             );
 
         return http.build();
