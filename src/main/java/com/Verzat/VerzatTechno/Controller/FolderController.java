@@ -44,15 +44,20 @@ public class FolderController {
         if (folder.getUser() != null && folder.getUser().getEmail() != null) {
             user = userRepo.findByEmail(folder.getUser().getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-        }
+        } else {
+            String currentUserEmail = org.springframework.security.core.context.SecurityContextHolder
+                    .getContext()
+                    .getAuthentication()
+                    .getName(); 
 
-        if (user == null) {
-            throw new RuntimeException("User email is required");
+            user = userRepo.findByEmail(currentUserEmail)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
         }
 
         folder.setUser(user);
         return folderRepo.save(folder);
     }
+
 
     @DeleteMapping("/{folderId}")
     public void deleteFolder(@PathVariable Long folderId) {
