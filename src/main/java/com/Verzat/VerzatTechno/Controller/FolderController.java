@@ -25,8 +25,6 @@ public class FolderController {
     @Autowired
     private UserRepo userRepo;
 
-    private final String ADMIN_EMAIL = "admin@gmail.com"; // hardcoded admin
-
     @GetMapping("/user/{email}")
     public List<Folder> getFoldersByUser(@PathVariable String email) {
         User user = userRepo.findByEmail(email)
@@ -36,7 +34,6 @@ public class FolderController {
 
     @PostMapping
     public Folder createFolder(@RequestBody Folder folder) {
-
         if (folder == null || folder.getName() == null || folder.getName().trim().isEmpty()) {
             throw new RuntimeException("Folder name is required");
         }
@@ -56,10 +53,6 @@ public class FolderController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
         }
 
-        if (ADMIN_EMAIL.equals(user.getEmail())) {
-            System.out.println("Admin is creating a folder");
-        }
-
         folder.setUser(user);
         return folderRepo.save(folder);
     }
@@ -71,8 +64,11 @@ public class FolderController {
                 .getAuthentication().getName()
         ).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (ADMIN_EMAIL.equals(currentUser.getEmail())) {
-            System.out.println("Admin is deleting a folder");
+        Folder folder = folderRepo.findById(folderId)
+                .orElseThrow(() -> new RuntimeException("Folder not found"));
+
+        if (!folder.getUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Not authorized to delete this folder");
         }
 
         folderService.deleteFolder(folderId);
