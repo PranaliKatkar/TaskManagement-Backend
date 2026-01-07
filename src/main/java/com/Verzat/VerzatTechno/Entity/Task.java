@@ -46,4 +46,6 @@ public class Task {
 
     public Folder getFolder() { return folder; }
     public void setFolder(Folder folder) { this.folder = folder; }
+
+	
 }
