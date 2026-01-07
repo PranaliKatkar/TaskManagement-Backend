@@ -12,37 +12,33 @@ import com.Verzat.VerzatTechno.Repository.AlertRepository;
 @Service
 public class AlertService {
 
-  @Autowired
-  private AlertRepository alertRepo;
+    @Autowired
+    private AlertRepository alertRepo;
 
-  public void createAlertIfRequired(Task task) {
+    public void createAlertIfRequired(Task task) {
 
-    if (task.isCompleted() || task.getDueDate() == null) return;
+        if (task.isCompleted() || task.getDueDate() == null) return;
 
-    LocalDate today = LocalDate.now();
-    LocalDate tomorrow = today.plusDays(1);
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
 
-    if (task.getDueDate().isBefore(today)) {
-      saveAlert(task, "HIGH", "Task \"" + task.getTitle() + "\" is overdue");
+        if (task.getDueDate().isBefore(today)) {
+            saveAlert(task, "HIGH",
+                    "Task \"" + task.getTitle() + "\" is overdue");
+        }
+
+        if (task.getDueDate().isEqual(tomorrow)) {
+            saveAlert(task, "LOW",
+                    "Task \"" + task.getTitle() + "\" is due tomorrow");
+        }
     }
 
-    if (task.getDueDate().isEqual(tomorrow)) {
-      saveAlert(task, "LOW", "Task \"" + task.getTitle() + "\" is due tomorrow");
+    private void saveAlert(Task task, String type, String message) {
+        Alert alert = new Alert();
+        alert.setUserEmail(task.getFolder().getUser().getEmail());
+        alert.setTaskId(task.getId());
+        alert.setAlertType(type);
+        alert.setMessage(message);
+        alertRepo.save(alert);
     }
-  }
-
-  private void saveAlert(Task task, String type, String message) {
-	    Alert alert = new Alert();
-
-	    alert.setUserEmail(
-	        task.getFolder().getUser().getEmail()
-	    );
-
-	    alert.setTaskId(task.getId());
-	    alert.setAlertType(type);
-	    alert.setMessage(message);
-
-	    alertRepo.save(alert);
-	}
-
 }

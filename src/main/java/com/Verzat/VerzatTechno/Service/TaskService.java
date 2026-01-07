@@ -26,6 +26,10 @@ public class TaskService {
     @Autowired
     private FolderRepo folderRepo;
 
+    // 🔔 NEW (does NOT affect existing logic)
+    @Autowired
+    private AlertService alertService;
+
     public TaskResponse addTask(Long folderId, TaskCreateRequest request) {
         Folder folder = folderRepo.findById(folderId)
                 .orElseThrow(() -> new RuntimeException("Folder not found"));
@@ -33,14 +37,15 @@ public class TaskService {
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setCompleted(false);
-
         task.setDescription(request.getDescription());
         task.setPriority(request.getPriority() != null ? request.getPriority() : "Medium");
         task.setDueDate(request.getDueDate());
-
         task.setFolder(folder);
 
         Task savedTask = taskRepo.save(task);
+
+        // 🔔 ALERT CHECK (non-intrusive)
+        alertService.createAlertIfRequired(savedTask);
 
         createFolderIfNotExists(folderId);
         saveTaskToFile(folderId, savedTask);
@@ -49,7 +54,8 @@ public class TaskService {
     }
 
     public List<TaskResponse> getTasks(Long folderId) {
-        if (!folderRepo.existsById(folderId)) throw new RuntimeException("Folder not found");
+        if (!folderRepo.existsById(folderId))
+            throw new RuntimeException("Folder not found");
 
         return taskRepo.findByFolder_Id(folderId)
                 .stream()
@@ -60,8 +66,13 @@ public class TaskService {
     public TaskResponse markTaskCompleted(Long taskId) {
         Task task = taskRepo.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+
         task.setCompleted(true);
         Task updatedTask = taskRepo.save(task);
+
+        // 🔔 Re-check alert (completed tasks will be ignored)
+        alertService.createAlertIfRequired(updatedTask);
+
         updateTaskFile(updatedTask);
         return new TaskResponse(updatedTask);
     }
@@ -69,42 +80,60 @@ public class TaskService {
     public void deleteTask(Long taskId) {
         Task task = taskRepo.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+
         deleteTaskFile(task);
         taskRepo.delete(task);
     }
 
     private void createFolderIfNotExists(Long folderId) {
-        try { Files.createDirectories(Paths.get(BASE_DIR, "folder_" + folderId)); }
-        catch (IOException e) { throw new RuntimeException("Could not create folder directory"); }
+        try {
+            Files.createDirectories(Paths.get(BASE_DIR, "folder_" + folderId));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create folder directory");
+        }
     }
 
     private void saveTaskToFile(Long folderId, Task task) {
         try {
-            Path file = Paths.get(BASE_DIR, "folder_" + folderId,
-                    "task_" + task.getId() + ".txt");
+            Path file = Paths.get(
+                    BASE_DIR,
+                    "folder_" + folderId,
+                    "task_" + task.getId() + ".txt"
+            );
 
-            String content = "Title: " + task.getTitle() +
+            String content =
+                    "Title: " + task.getTitle() +
                     "\nDescription: " + task.getDescription() +
                     "\nPriority: " + task.getPriority() +
                     "\nDueDate: " + task.getDueDate() +
                     "\nCompleted: " + task.isCompleted();
 
-            Files.write(file, content.getBytes(),
+            Files.write(
+                    file,
+                    content.getBytes(),
                     StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING);
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
 
         } catch (IOException e) {
             throw new RuntimeException("Could not save task file");
         }
     }
 
-    private void updateTaskFile(Task task) { saveTaskToFile(task.getFolder().getId(), task); }
+    private void updateTaskFile(Task task) {
+        saveTaskToFile(task.getFolder().getId(), task);
+    }
 
     private void deleteTaskFile(Task task) {
         try {
-            Path file = Paths.get(BASE_DIR, "folder_" + task.getFolder().getId(),
-                    "task_" + task.getId() + ".txt");
+            Path file = Paths.get(
+                    BASE_DIR,
+                    "folder_" + task.getFolder().getId(),
+                    "task_" + task.getId() + ".txt"
+            );
             Files.deleteIfExists(file);
-        } catch (IOException e) { throw new RuntimeException("Could not delete task file"); }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not delete task file");
+        }
     }
 }
