@@ -59,18 +59,7 @@ public class FolderController {
 
     @DeleteMapping("/{folderId}")
     public void deleteFolder(@PathVariable Long folderId) {
-        User currentUser = userRepo.findByEmail(
-            org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication().getName()
-        ).orElseThrow(() -> new RuntimeException("User not found"));
-
-        Folder folder = folderRepo.findById(folderId)
-                .orElseThrow(() -> new RuntimeException("Folder not found"));
-
-        if (!folder.getUser().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Not authorized to delete this folder");
-        }
-
         folderService.deleteFolder(folderId);
     }
+
 }
