@@ -24,7 +24,7 @@ public class AlertEmailScheduler {
     @Autowired
     private EmailService emailService;
 
-    @Scheduled(cron = "0 5 9 * * ?", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 20 15 * * ?", zone = "Asia/Kolkata")
     public void sendDailyAlertEmails() {
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
