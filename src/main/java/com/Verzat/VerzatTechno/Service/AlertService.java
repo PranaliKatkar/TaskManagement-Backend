@@ -17,7 +17,9 @@ public class AlertService {
 
     public void createAlertIfRequired(Task task) {
 
-        if (task.isCompleted() || task.getDueDate() == null) return;
+        if (task == null || task.isCompleted() || task.getDueDate() == null) {
+            return;
+        }
 
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
@@ -42,11 +44,17 @@ public class AlertService {
     }
 
     private void saveAlert(Task task, String type, String message) {
+
+        if (alertRepo.existsByTaskIdAndAlertType(task.getId(), type)) {
+            return;
+        }
+
         Alert alert = new Alert();
         alert.setUserEmail(task.getFolder().getUser().getEmail());
         alert.setTaskId(task.getId());
         alert.setAlertType(type);
         alert.setMessage(message);
+
         alertRepo.save(alert);
     }
 }

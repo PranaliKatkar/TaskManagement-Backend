@@ -9,4 +9,6 @@ public interface TaskRepo extends JpaRepository<Task, Long> {
     List<Task> findByFolder_Id(Long folderId);
 
     void deleteByFolder_Id(Long folderId);
+
+	List<Task> findByCompletedFalse();
 }
