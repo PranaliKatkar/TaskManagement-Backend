@@ -20,7 +20,7 @@ public class AlertController {
     public List<Alert> getUserAlerts(@PathVariable String email) {
         return alertRepo.findByUserEmailOrderByCreatedAtDesc(email);
     }
-    
+
     @DeleteMapping("/{alertId}")
     public void deleteAlert(@PathVariable Long alertId) {
         alertRepo.deleteById(alertId);

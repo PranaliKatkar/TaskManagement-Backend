@@ -1,7 +1,10 @@
 package com.Verzat.VerzatTechno.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,9 @@ public class AlertService {
 
     @Autowired
     private AlertRepository alertRepo;
+
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
     public void generateAlertForTask(Task task, LocalDate today) {
@@ -39,7 +45,9 @@ public class AlertService {
             message = "Task \"" + task.getTitle() + "\" is due tomorrow";
         }
 
-        if (alertType == null) return;
+        if (alertType == null) {
+            return;
+        }
 
         alertRepo.deleteByTaskId(task.getId());
 
@@ -54,9 +62,49 @@ public class AlertService {
 
     @Transactional
     public void regenerateAllAlerts(List<Task> tasks, LocalDate today) {
+
         alertRepo.deleteAll();
+
         for (Task task : tasks) {
             generateAlertForTask(task, today);
         }
+
+        sendAlertEmailsForToday(today);
+    }
+
+    public void sendAlertEmailsForToday(LocalDate today) {
+
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.atTime(23, 59, 59);
+
+        List<Alert> alerts = alertRepo.findByCreatedAtBetween(start, end);
+        if (alerts.isEmpty()) {
+            return;
+        }
+
+        Map<String, List<Alert>> alertsByUser =
+                alerts.stream().collect(Collectors.groupingBy(Alert::getUserEmail));
+
+        alertsByUser.forEach((email, userAlerts) -> {
+
+            StringBuilder html = new StringBuilder();
+            html.append("<h3>Your Task Alerts</h3><ul>");
+
+            for (Alert alert : userAlerts) {
+                html.append("<li>").append(alert.getMessage()).append("</li>");
+            }
+
+            html.append("</ul>");
+
+            try {
+                emailService.sendHtmlEmail(
+                        email,
+                        "Your Task Alerts – " + today,
+                        html.toString()
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
