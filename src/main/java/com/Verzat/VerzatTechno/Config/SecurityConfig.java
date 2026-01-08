@@ -41,13 +41,11 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-                // ✅ explicitly allow test + alert APIs
                 .requestMatchers(
                     "/api/test/**",
                     "/api/alerts/**",
                     "/api/auth/**"
                 ).permitAll()
-                // everything else blocked
                 .anyRequest().denyAll()
             );
 
