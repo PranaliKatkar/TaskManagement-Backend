@@ -24,37 +24,51 @@ public class AlertScheduler {
     @Autowired
     private AlertRepository alertRepository;
 
-    @Scheduled(cron = "0 20 13 * * ?", zone = "Asia/Kolkata")
+    @Transactional
+    @Scheduled(cron = "0 15 14 * * ?", zone = "Asia/Kolkata")
     public void generateDailyAlerts() {
+
+        System.out.println("=== ALERT SCHEDULER STARTED ===");
+
+        alertRepository.deleteAll();
+        System.out.println("Old alerts cleared");
 
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
         LocalDate tomorrow = today.plusDays(1);
 
-        List<Task> tasks = taskRepo.findByDueDateIn(
-                List.of(today, tomorrow)
-        );
+        List<Task> allTasks = taskRepo.findAll();
+        System.out.println("Total tasks found: " + allTasks.size());
 
-        System.out.println("Scheduler running at 1 PM");
-        System.out.println("Tasks found: " + tasks.size());
+        for (Task task : allTasks) {
 
-        for (Task task : tasks) {
+            LocalDate dueDate = task.getDueDate();
+            String alertType = null;
+            String message = null;
 
-            Alert alert = new Alert();
-            alert.setTaskId(task.getId());
+            if (dueDate.isBefore(today)) {
+                alertType = "OVERDUE";
+                message = "Task \"" + task.getTitle() + "\" is OVERDUE";
+            }
+            else if (dueDate.isEqual(today)) {
+                alertType = "TODAY";
+                message = "Task due TODAY: " + task.getTitle();
+            }
+            else if (dueDate.isEqual(tomorrow)) {
+                alertType = "TOMORROW";
+                message = "Task due TOMORROW: " + task.getTitle();
+            }
 
-            alert.setUserEmail(
-                task.getFolder().getUser().getEmail()
-            );
+            if (alertType != null) {
+                Alert alert = new Alert();
+                alert.setTaskId(task.getId());
+                alert.setUserEmail(task.getFolder().getUser().getEmail());
+                alert.setAlertType(alertType);
+                alert.setMessage(message);
 
-            alert.setAlertType("DUE");
-
-            alert.setMessage(
-                task.getDueDate().equals(today)
-                    ? "Task due TODAY: " + task.getTitle()
-                    : "Task due TOMORROW: " + task.getTitle()
-            );
-
-            alertRepository.save(alert);
+                alertRepository.save(alert);
+            }
         }
+
+        System.out.println("=== ALERT SCHEDULER FINISHED ===");
     }
 }
