@@ -45,9 +45,7 @@ public class AlertService {
 
     private void saveAlert(Task task, String type, String message) {
 
-        if (alertRepo.existsByTaskIdAndAlertType(task.getId(), type)) {
-            return;
-        }
+        alertRepo.deleteByTaskId(task.getId());
 
         Alert alert = new Alert();
         alert.setUserEmail(task.getFolder().getUser().getEmail());
@@ -57,4 +55,5 @@ public class AlertService {
 
         alertRepo.save(alert);
     }
+
 }

@@ -22,7 +22,7 @@ public class AlertScheduler {
     private AlertService alertService;
 
     @Transactional
-    @Scheduled(cron = "0 20 12 * * ?")
+    @Scheduled(cron = "0 0 13 * * ?")
     public void checkTasksForAlerts() {
 
         List<Task> pendingTasks = taskRepo.findByCompletedFalse();

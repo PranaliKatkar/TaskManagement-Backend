@@ -14,5 +14,6 @@ public interface AlertRepository extends JpaRepository<Alert, Long>{
 
 	  void deleteByCreatedAtBefore(LocalDateTime cutoff);
 
+	  void deleteByTaskId(Long taskId);
 
 }
