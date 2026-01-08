@@ -1,6 +1,7 @@
 package com.Verzat.VerzatTechno.Scheduler;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.Verzat.VerzatTechno.Entity.Alert;
 import com.Verzat.VerzatTechno.Entity.Task;
+import com.Verzat.VerzatTechno.Repository.AlertRepository;
 import com.Verzat.VerzatTechno.Repository.TaskRepo;
 import com.Verzat.VerzatTechno.Service.AlertService;
 
@@ -19,17 +22,39 @@ public class AlertScheduler {
     private TaskRepo taskRepo;
 
     @Autowired
-    private AlertService alertService;
+    private AlertRepository alertRepository;
 
-    @Transactional
-    @Scheduled(cron = "0 0 13 * * ?")
-    public void checkTasksForAlerts() {
+    @Scheduled(cron = "0 20 13 * * ?", zone = "Asia/Kolkata")
+    public void generateDailyAlerts() {
 
-        List<Task> pendingTasks = taskRepo.findByCompletedFalse();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+        LocalDate tomorrow = today.plusDays(1);
 
-        for (Task task : pendingTasks) {
-            alertService.createAlertIfRequired(task);
+        List<Task> tasks = taskRepo.findByDueDateIn(
+                List.of(today, tomorrow)
+        );
+
+        System.out.println("Scheduler running at 1 PM");
+        System.out.println("Tasks found: " + tasks.size());
+
+        for (Task task : tasks) {
+
+            Alert alert = new Alert();
+            alert.setTaskId(task.getId());
+
+            alert.setUserEmail(
+                task.getFolder().getUser().getEmail()
+            );
+
+            alert.setAlertType("DUE");
+
+            alert.setMessage(
+                task.getDueDate().equals(today)
+                    ? "Task due TODAY: " + task.getTitle()
+                    : "Task due TOMORROW: " + task.getTitle()
+            );
+
+            alertRepository.save(alert);
         }
     }
 }
-

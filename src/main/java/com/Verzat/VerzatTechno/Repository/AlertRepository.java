@@ -8,12 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.Verzat.VerzatTechno.Entity.Alert;
 
 public interface AlertRepository extends JpaRepository<Alert, Long>{
-	  List<Alert> findByUserEmailOrderByCreatedAtDesc(String userEmail);
+	List<Alert> findByUserEmailOrderByCreatedAtDesc(String userEmail);
 
-	  boolean existsByTaskIdAndAlertType(Long id, String type);
+    List<Alert> findByCreatedAtBetween(
+        LocalDateTime start,
+        LocalDateTime end
+    );
 
-	  void deleteByCreatedAtBefore(LocalDateTime cutoff);
-
-	  void deleteByTaskId(Long taskId);
-
+    void deleteByTaskId(Long taskId);
 }
