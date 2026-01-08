@@ -2,6 +2,8 @@ package com.Verzat.VerzatTechno.Service;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +28,6 @@ public class TaskService {
     @Autowired
     private FolderRepo folderRepo;
 
-    // 🔔 NEW (does NOT affect existing logic)
     @Autowired
     private AlertService alertService;
 
@@ -44,8 +45,10 @@ public class TaskService {
 
         Task savedTask = taskRepo.save(task);
 
-        // 🔔 ALERT CHECK (non-intrusive)
-        alertService.createAlertIfRequired(savedTask);
+        alertService.generateAlertForTask(
+                savedTask,
+                LocalDate.now(ZoneId.of("Asia/Kolkata"))
+        );
 
         createFolderIfNotExists(folderId);
         saveTaskToFile(folderId, savedTask);
@@ -70,8 +73,10 @@ public class TaskService {
         task.setCompleted(true);
         Task updatedTask = taskRepo.save(task);
 
-        // 🔔 Re-check alert (completed tasks will be ignored)
-        alertService.createAlertIfRequired(updatedTask);
+        alertService.generateAlertForTask(
+                updatedTask,
+                LocalDate.now(ZoneId.of("Asia/Kolkata"))
+        );
 
         updateTaskFile(updatedTask);
         return new TaskResponse(updatedTask);

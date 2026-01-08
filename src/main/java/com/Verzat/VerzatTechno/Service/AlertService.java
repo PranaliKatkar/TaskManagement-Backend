@@ -1,9 +1,11 @@
 package com.Verzat.VerzatTechno.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.Verzat.VerzatTechno.Entity.Alert;
 import com.Verzat.VerzatTechno.Entity.Task;
@@ -15,45 +17,46 @@ public class AlertService {
     @Autowired
     private AlertRepository alertRepo;
 
-    public void createAlertIfRequired(Task task) {
+    @Transactional
+    public void generateAlertForTask(Task task, LocalDate today) {
 
         if (task == null || task.isCompleted() || task.getDueDate() == null) {
             return;
         }
 
-        LocalDate today = LocalDate.now();
-        LocalDate tomorrow = today.plusDays(1);
         LocalDate dueDate = task.getDueDate();
+        String alertType = null;
+        String message = null;
 
         if (dueDate.isBefore(today)) {
-            saveAlert(task, "HIGH",
-                    "Task \"" + task.getTitle() + "\" is overdue");
-            return;
+            alertType = "OVERDUE";
+            message = "Task \"" + task.getTitle() + "\" is overdue";
+        } else if (dueDate.isEqual(today)) {
+            alertType = "TODAY";
+            message = "Task \"" + task.getTitle() + "\" is due today";
+        } else if (dueDate.isEqual(today.plusDays(1))) {
+            alertType = "TOMORROW";
+            message = "Task \"" + task.getTitle() + "\" is due tomorrow";
         }
 
-        if (dueDate.isEqual(today)) {
-            saveAlert(task, "HIGH",
-                    "Task \"" + task.getTitle() + "\" is due today");
-            return;
-        }
-
-        if (dueDate.isEqual(tomorrow)) {
-            saveAlert(task, "LOW",
-                    "Task \"" + task.getTitle() + "\" is due tomorrow");
-        }
-    }
-
-    private void saveAlert(Task task, String type, String message) {
+        if (alertType == null) return;
 
         alertRepo.deleteByTaskId(task.getId());
 
         Alert alert = new Alert();
-        alert.setUserEmail(task.getFolder().getUser().getEmail());
         alert.setTaskId(task.getId());
-        alert.setAlertType(type);
+        alert.setUserEmail(task.getFolder().getUser().getEmail());
+        alert.setAlertType(alertType);
         alert.setMessage(message);
 
         alertRepo.save(alert);
     }
 
+    @Transactional
+    public void regenerateAllAlerts(List<Task> tasks, LocalDate today) {
+        alertRepo.deleteAll();
+        for (Task task : tasks) {
+            generateAlertForTask(task, today);
+        }
+    }
 }
