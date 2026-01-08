@@ -24,6 +24,17 @@ public class AlertService {
     private EmailService emailService;
 
     @Transactional
+    public void regenerateAllAlerts(List<Task> tasks, LocalDate today) {
+
+        alertRepo.deleteAll();
+
+        for (Task task : tasks) {
+            generateAlertForTask(task, today);
+        }
+
+        sendMailIfAlertsExist(today);
+    }
+
     public void generateAlertForTask(Task task, LocalDate today) {
 
         if (task == null || task.isCompleted() || task.getDueDate() == null) {
@@ -45,9 +56,7 @@ public class AlertService {
             message = "Task \"" + task.getTitle() + "\" is due tomorrow";
         }
 
-        if (alertType == null) {
-            return;
-        }
+        if (alertType == null) return;
 
         alertRepo.deleteByTaskId(task.getId());
 
@@ -60,32 +69,18 @@ public class AlertService {
         alertRepo.save(alert);
     }
 
-    @Transactional
-    public void regenerateAllAlerts(List<Task> tasks, LocalDate today) {
-
-        alertRepo.deleteAll();
-
-        for (Task task : tasks) {
-            generateAlertForTask(task, today);
-        }
-
-        sendAlertEmailsForToday(today);
-    }
-
-    public void sendAlertEmailsForToday(LocalDate today) {
+    private void sendMailIfAlertsExist(LocalDate today) {
 
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.atTime(23, 59, 59);
 
         List<Alert> alerts = alertRepo.findByCreatedAtBetween(start, end);
-        if (alerts.isEmpty()) {
-            return;
-        }
+        if (alerts.isEmpty()) return;
 
-        Map<String, List<Alert>> alertsByUser =
+        Map<String, List<Alert>> grouped =
                 alerts.stream().collect(Collectors.groupingBy(Alert::getUserEmail));
 
-        alertsByUser.forEach((email, userAlerts) -> {
+        grouped.forEach((email, userAlerts) -> {
 
             StringBuilder html = new StringBuilder();
             html.append("<h3>Your Task Alerts</h3><ul>");
