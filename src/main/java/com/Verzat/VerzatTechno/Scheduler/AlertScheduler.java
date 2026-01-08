@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.Verzat.VerzatTechno.Entity.Task;
 import com.Verzat.VerzatTechno.Repository.TaskRepo;
@@ -20,7 +21,8 @@ public class AlertScheduler {
     @Autowired
     private AlertService alertService;
 
-    @Scheduled(cron = "0 0 9 * * ?")
+    @Transactional
+    @Scheduled(cron = "0 10 12 * * ?")
     public void checkTasksForAlerts() {
 
         List<Task> pendingTasks = taskRepo.findByCompletedFalse();
