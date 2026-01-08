@@ -18,7 +18,6 @@ public class Folder {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // 🔥 IMPORTANT: LAZY + JsonIgnore
     @OneToMany(
         mappedBy = "folder",
         cascade = CascadeType.ALL,
