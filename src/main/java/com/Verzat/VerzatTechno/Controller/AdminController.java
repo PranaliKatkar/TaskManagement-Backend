@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.Verzat.VerzatTechno.Dto.UserResponse;
 import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.UserRepo;
 import com.Verzat.VerzatTechno.Service.AdminService;
@@ -20,8 +21,16 @@ public class AdminController {
     private AdminService adminService;
 
     @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
+    public List<UserResponse> getAllUsers() {
+        return userRepo.findAll().stream()
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getEmail(),
+                        u.getPhoneNumber(),
+                        "USER"
+                ))
+                .toList();
     }
 
     @DeleteMapping("/users/{id}")

@@ -17,9 +17,13 @@ public class User {
     private Long id;
 
     private String username;
+    
+    @Column(unique = true, nullable = false)
     private String email;
+    
     private String password;
     
+    @Column(unique = true, nullable = false, length = 13)
     private String phoneNumber;
     
 	public User() {
