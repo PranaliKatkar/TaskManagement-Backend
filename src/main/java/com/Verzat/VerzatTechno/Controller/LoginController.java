@@ -10,7 +10,6 @@ import com.Verzat.VerzatTechno.Service.LoginService;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "https://task-management-frontend-jk35.onrender.com")
 public class LoginController {
 
     @Autowired
@@ -18,28 +17,34 @@ public class LoginController {
 
     @PostMapping("/register")
     public UserResponse register(@RequestBody User user) {
+
         User savedUser = loginService.register(user);
+
         return new UserResponse(
-            savedUser.getId(),
-            savedUser.getUsername(),
-            savedUser.getEmail(),
-            savedUser.getPhoneNumber(),
-            "USER"
+                savedUser.getId(),
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                savedUser.getPhoneNumber(),
+                "USER"
         );
     }
-
 
     @PostMapping("/login")
     public Object login(@RequestBody User user) {
 
-        if ("admin".equals(user.getEmail()) && "admin".equals(user.getPassword())) {
+        if ("admin@gmail.com".equals(user.getEmail())
+                && "admin".equals(user.getPassword())) {
             return new AdminResponse("admin", "ADMIN");
         }
 
         User dbUser = loginService.login(user);
-        return new UserResponse(dbUser.getId(), dbUser.getUsername() ,dbUser.getEmail(),dbUser.getPhoneNumber(), "USER");
+
+        return new UserResponse(
+                dbUser.getId(),
+                dbUser.getUsername(),
+                dbUser.getEmail(),
+                dbUser.getPhoneNumber(),
+                "USER"
+        );
     }
 }
-
-    
-
