@@ -13,7 +13,6 @@ public class UserResponse {
         this.role = role;
     }
 
-    // Getters
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public String getEmail() { return email; }

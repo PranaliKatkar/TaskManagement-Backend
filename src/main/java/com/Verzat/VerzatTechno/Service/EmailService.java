@@ -1,35 +1,63 @@
 package com.Verzat.VerzatTechno.Service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${brevo.api.key}")
+    private String apiKey;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    @Value("${brevo.sender.email}")
+    private String senderEmail;
 
-    public void sendHtmlEmail(String to, String subject, String htmlBody)
-            throws MessagingException {
+    @Value("${brevo.sender.name}")
+    private String senderName;
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper =
-                new MimeMessageHelper(message, true, "UTF-8");
+    public void sendHtmlEmail(String to, String subject, String htmlBody) {
 
-        helper.setFrom(fromEmail);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlBody, true);
+        try {
+            String payload = """
+            {
+              "sender": {
+                "email": "%s",
+                "name": "%s"
+              },
+              "to": [
+                {
+                  "email": "%s"
+                }
+              ],
+              "subject": "%s",
+              "htmlContent": "%s"
+            }
+            """.formatted(
+                senderEmail,
+                senderName,
+                to,
+                subject,
+                htmlBody.replace("\"", "\\\"")
+            );
 
-        mailSender.send(message);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("accept", "application/json")
+                    .header("api-key", apiKey)
+                    .header("content-type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+
+            HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Email sending failed", e);
+        }
     }
 }

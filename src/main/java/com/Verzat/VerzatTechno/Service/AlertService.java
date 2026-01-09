@@ -91,15 +91,11 @@ public class AlertService {
 
             html.append("</ul>");
 
-            try {
-                emailService.sendHtmlEmail(
-                        email,
-                        "Your Task Alerts – " + today,
-                        html.toString()
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            emailService.sendHtmlEmail(
+                    email,
+                    "Your Task Alerts – " + today,
+                    html.toString()
+            );
         });
     }
 }

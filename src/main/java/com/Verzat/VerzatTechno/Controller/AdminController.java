@@ -22,14 +22,12 @@ public class AdminController {
     @Autowired
     private UserRepo userRepo;
 
-    // GET all users (ADMIN only)
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userRepo.findAll();
         return ResponseEntity.ok(users);
     }
 
-    // DELETE user by ID (ADMIN only)
     @DeleteMapping("/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
 
