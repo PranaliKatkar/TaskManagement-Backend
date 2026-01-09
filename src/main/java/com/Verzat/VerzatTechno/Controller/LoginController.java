@@ -17,9 +17,17 @@ public class LoginController {
     private LoginService loginService;
 
     @PostMapping("/register")
-    public User register(@RequestBody User user) {
-        return loginService.register(user);
+    public UserResponse register(@RequestBody User user) {
+        User savedUser = loginService.register(user);
+        return new UserResponse(
+            savedUser.getId(),
+            savedUser.getUsername(),
+            savedUser.getEmail(),
+            savedUser.getPhoneNumber(),
+            "USER"
+        );
     }
+
 
     @PostMapping("/login")
     public Object login(@RequestBody User user) {
@@ -29,7 +37,7 @@ public class LoginController {
         }
 
         User dbUser = loginService.login(user);
-        return new UserResponse(dbUser.getId(), dbUser.getUsername(), dbUser.getEmail(), "USER");
+        return new UserResponse(dbUser.getId(), dbUser.getUsername() ,dbUser.getEmail(),dbUser.getPhoneNumber(), "USER");
     }
 }
 

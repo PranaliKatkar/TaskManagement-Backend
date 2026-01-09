@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.UserRepo;
+import com.Verzat.VerzatTechno.Util.ContactNumberUtil;
 
 @Service
 public class LoginService {
@@ -21,6 +22,8 @@ public class LoginService {
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
+            String formattedNumber = ContactNumberUtil.formatIndianNumber(user.getPhoneNumber());
+            user.setPhoneNumber(formattedNumber);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
