@@ -21,7 +21,7 @@ public class AlertScheduler {
     @Autowired
     private AlertService alertService;
 
-    @Scheduled(cron = "0 27 12 * * ?", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 30 12 * * ?", zone = "Asia/Kolkata")
     public void runDailyAlertJob() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
         List<Task> allTasks = taskRepo.findAll();
