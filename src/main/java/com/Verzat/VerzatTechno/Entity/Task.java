@@ -30,19 +30,36 @@ public class Task {
     @JsonIgnore
     private Folder folder;
 
+
     public Long getId() { return id; }
+
     public String getTitle() { return title; }
+
     public String getDescription() { return description; }
+
     public String getPriority() { return priority; }
+
     public LocalDate getDueDate() { return dueDate; }
+
     public boolean isCompleted() { return completed; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
 
+    public Folder getFolder() {       
+        return folder;
+    }
+
     public void setId(Long id) { this.id = id; }
+
     public void setTitle(String title) { this.title = title; }
+
     public void setDescription(String description) { this.description = description; }
+
     public void setPriority(String priority) { this.priority = priority; }
+
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+
     public void setCompleted(boolean completed) { this.completed = completed; }
+
     public void setFolder(Folder folder) { this.folder = folder; }
 }
