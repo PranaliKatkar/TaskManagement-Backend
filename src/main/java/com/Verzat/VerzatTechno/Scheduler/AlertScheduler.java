@@ -1,7 +1,7 @@
 package com.Verzat.VerzatTechno.Scheduler;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.Verzat.VerzatTechno.Entity.Task;
+import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.TaskRepo;
+import com.Verzat.VerzatTechno.Repository.UserRepo;
 import com.Verzat.VerzatTechno.Service.AlertService;
 
 @Component
@@ -21,10 +23,25 @@ public class AlertScheduler {
     @Autowired
     private AlertService alertService;
 
-    @Scheduled(cron = "0 10 15 * * ?", zone = "Asia/Kolkata")
-    public void runDailyAlertJob() {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
-        List<Task> allTasks = taskRepo.findAll();
-        alertService.regenerateAllAlerts(allTasks, today);
+    @Autowired
+    private UserRepo userRepo;
+
+    @Scheduled(cron = "0 * * * * ?", zone = "Asia/Kolkata")
+    public void runUserTimeAlerts() {
+
+        LocalTime now = LocalTime.now().withSecond(0);
+        LocalDate today = LocalDate.now();
+        List<Task> tasks = taskRepo.findAll();
+        List<User> users = userRepo.findByAlertEnabledTrue();
+
+        for (User user : users) {
+            if (user.getAlertTime() != null && user.getAlertTime().equals(now)) {
+                alertService.regenerateAlertsForUser(
+                        tasks,
+                        today,
+                        user.getEmail()
+                );
+            }
+        }
     }
 }

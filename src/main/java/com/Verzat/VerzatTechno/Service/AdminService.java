@@ -35,10 +35,8 @@ public class AdminService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 1️⃣ Get user folders
         List<Folder> folders = folderRepo.findByUser(user);
 
-        // 2️⃣ Delete tasks + alerts
         for (Folder folder : folders) {
 
             List<Task> tasks = taskRepo.findByFolder(folder);
@@ -50,10 +48,8 @@ public class AdminService {
             taskRepo.deleteAll(tasks);
         }
 
-        // 3️⃣ Delete folders
         folderRepo.deleteAll(folders);
 
-        // 4️⃣ Delete user
         userRepo.delete(user);
     }
 }

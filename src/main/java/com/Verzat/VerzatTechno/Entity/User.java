@@ -1,43 +1,30 @@
 package com.Verzat.VerzatTechno.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import java.time.LocalTime;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;
-    
+
     @Column(unique = true, nullable = false)
     private String email;
-    
+
     private String password;
-    
+
     @Column(unique = true, nullable = false, length = 13)
     private String phoneNumber;
-    
-	public User() {
-		super();
-	}
 
-	public User(Long id, String username, String email, String password, String phoneNumber) {
-		super();
-		this.id = id;
-		this.username = username;
-		this.email = email;
-		this.password = password;
-		this.phoneNumber = phoneNumber;
-	}
+    private boolean alertEnabled;
+
+    private LocalTime alertTime;
 
 	public Long getId() {
 		return id;
@@ -78,6 +65,23 @@ public class User {
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
-	
-	
+
+	public boolean isAlertEnabled() {
+		return alertEnabled;
+	}
+
+	public void setAlertEnabled(boolean alertEnabled) {
+		this.alertEnabled = alertEnabled;
+	}
+
+	public LocalTime getAlertTime() {
+		return alertTime;
+	}
+
+	public void setAlertTime(LocalTime alertTime) {
+		this.alertTime = alertTime;
+	}
+    
+    
+
 }

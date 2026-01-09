@@ -16,4 +16,6 @@ public interface AlertRepository extends JpaRepository<Alert, Long>{
     );
 
     void deleteByTaskId(Long taskId);
+
+	void deleteByUserEmail(String email);
 }

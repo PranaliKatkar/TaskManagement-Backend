@@ -23,24 +23,24 @@ public class AlertService {
 
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private UserRepo userRepo;
-    
+
     @Autowired
     private SmsService smsService;
-    
 
     @Transactional
-    public void regenerateAllAlerts(List<Task> tasks, LocalDate today) {
+    public void regenerateAlertsForUser(List<Task> tasks, LocalDate today, String userEmail) {
 
-        alertRepo.deleteAll();
+        alertRepo.deleteByUserEmail(userEmail);
 
         for (Task task : tasks) {
+            if (!task.getFolder().getUser().getEmail().equals(userEmail)) continue;
             generateAlertForTask(task, today);
         }
 
-        sendMailIfAlertsExist(today);
+        sendMailIfAlertsExist(today, userEmail);
     }
 
     public void generateAlertForTask(Task task, LocalDate today) {
@@ -77,50 +77,49 @@ public class AlertService {
         alertRepo.save(alert);
     }
 
-    private void sendMailIfAlertsExist(LocalDate today) {
+    private void sendMailIfAlertsExist(LocalDate today, String userEmail) {
 
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.atTime(23, 59, 59);
 
-        List<Alert> alerts = alertRepo.findByCreatedAtBetween(start, end);
+        List<Alert> alerts =
+                alertRepo.findByCreatedAtBetween(start, end)
+                         .stream()
+                         .filter(a -> a.getUserEmail().equals(userEmail))
+                         .toList();
+
         if (alerts.isEmpty()) return;
 
-        Map<String, List<Alert>> grouped =
-                alerts.stream().collect(Collectors.groupingBy(Alert::getUserEmail));
+        StringBuilder html = new StringBuilder();
+        html.append("<h3>Your Task Alerts</h3><ul>");
 
-        grouped.forEach((email, userAlerts) -> {
+        for (Alert alert : alerts) {
+            html.append("<li>").append(alert.getMessage()).append("</li>");
+        }
 
-            StringBuilder html = new StringBuilder();
-            html.append("<h3>Your Task Alerts</h3><ul>");
+        html.append("</ul>");
 
-            for (Alert alert : userAlerts) {
-                html.append("<li>").append(alert.getMessage()).append("</li>");
+        emailService.sendHtmlEmail(
+                userEmail,
+                "Your Task Alerts – " + today,
+                html.toString()
+        );
+
+        userRepo.findByEmail(userEmail).ifPresent(user -> {
+
+            StringBuilder smsText = new StringBuilder();
+            smsText.append("Task Alerts:\n");
+
+            for (Alert alert : alerts) {
+                smsText.append("- ")
+                       .append(alert.getMessage())
+                       .append("\n");
             }
 
-            html.append("</ul>");
-
-            emailService.sendHtmlEmail(
-                    email,
-                    "Your Task Alerts – " + today,
-                    html.toString()
+            smsService.sendSms(
+                    user.getPhoneNumber(),
+                    smsText.toString()
             );
-            userRepo.findByEmail(email).ifPresent(user -> {
-
-                StringBuilder smsText = new StringBuilder();
-                smsText.append("Task Alerts:\n");
-
-                for (Alert alert : userAlerts) {
-                    smsText.append("- ")
-                           .append(alert.getMessage())
-                           .append("\n");
-                }
-
-                smsService.sendSms(
-                        user.getPhoneNumber(),   
-                        smsText.toString()
-                );
-            });
-
         });
     }
 }
