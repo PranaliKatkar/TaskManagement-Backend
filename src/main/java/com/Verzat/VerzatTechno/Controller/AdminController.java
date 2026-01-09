@@ -1,11 +1,13 @@
 package com.Verzat.VerzatTechno.Controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.Verzat.VerzatTechno.Dto.UserResponse;
 import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.UserRepo;
 
@@ -23,8 +25,19 @@ public class AdminController {
     private UserRepo userRepo;
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userRepo.findAll();
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+
+        List<UserResponse> users = userRepo.findAll()
+                .stream()
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        "USER"
+                ))
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(users);
     }
 
@@ -32,9 +45,7 @@ public class AdminController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
 
         if (!userRepo.existsById(id)) {
-            return ResponseEntity
-                    .status(404)
-                    .body("User not found");
+            return ResponseEntity.status(404).body("User not found");
         }
 
         userRepo.deleteById(id);

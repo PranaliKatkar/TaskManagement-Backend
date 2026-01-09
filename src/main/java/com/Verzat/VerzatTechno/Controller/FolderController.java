@@ -13,7 +13,6 @@ import com.Verzat.VerzatTechno.Service.FolderService;
 
 @RestController
 @RequestMapping("/api/folders")
-@CrossOrigin(origins = "https://task-management-frontend-jk35.onrender.com")
 public class FolderController {
 
     @Autowired
@@ -34,24 +33,17 @@ public class FolderController {
 
     @PostMapping
     public Folder createFolder(@RequestBody Folder folder) {
-        if (folder == null || folder.getName() == null || folder.getName().trim().isEmpty()) {
-            throw new RuntimeException("Folder name is required");
+
+        if (folder.getName() == null || folder.getName().trim().isEmpty()) {
+            throw new RuntimeException("Folder name required");
         }
 
-        User user;
-
-        if (folder.getUser() != null && folder.getUser().getEmail() != null) {
-            user = userRepo.findByEmail(folder.getUser().getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-        } else {
-            String currentUserEmail = org.springframework.security.core.context.SecurityContextHolder
-                    .getContext()
-                    .getAuthentication()
-                    .getName(); 
-
-            user = userRepo.findByEmail(currentUserEmail)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+        if (folder.getUser() == null || folder.getUser().getEmail() == null) {
+            throw new RuntimeException("User email required");
         }
+
+        User user = userRepo.findByEmail(folder.getUser().getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         folder.setUser(user);
         return folderRepo.save(folder);
@@ -61,5 +53,4 @@ public class FolderController {
     public void deleteFolder(@PathVariable Long folderId) {
         folderService.deleteFolder(folderId);
     }
-
 }

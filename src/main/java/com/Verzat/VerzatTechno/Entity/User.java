@@ -13,14 +13,13 @@ import jakarta.persistence.Transient;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // <-- important
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private Long id;
 
     private String username;
     private String email;
     private String password;
     
-    @Column(nullable = false, length = 13, unique = true)
     private String phoneNumber;
     
 	public User() {

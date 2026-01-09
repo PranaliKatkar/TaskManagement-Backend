@@ -19,13 +19,25 @@ public class LoginService {
 
     public User register(User user) {
 
+        if (user.getPhoneNumber() == null || user.getPhoneNumber().isBlank()) {
+            throw new RuntimeException("Phone number is required");
+        }
+
         if (userRepo.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
-            String formattedNumber = ContactNumberUtil.formatIndianNumber(user.getPhoneNumber());
-            user.setPhoneNumber(formattedNumber);
 
+        String formattedNumber = ContactNumberUtil.formatIndianNumber(
+                user.getPhoneNumber()
+        );
+
+        if (userRepo.findByPhoneNumber(formattedNumber).isPresent()) {
+            throw new RuntimeException("Phone number already exists");
+        }
+
+        user.setPhoneNumber(formattedNumber);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         return userRepo.save(user);
     }
 
