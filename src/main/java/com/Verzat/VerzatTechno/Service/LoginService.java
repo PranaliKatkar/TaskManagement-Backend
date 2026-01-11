@@ -31,7 +31,7 @@ public class LoginService {
                 user.getContactNumber()
         );
 
-        if (userRepo.findByPhoneNumber(formattedNumber).isPresent()) {
+        if (userRepo.findByContactNumber(formattedNumber).isPresent()) {
             throw new RuntimeException("Phone number already exists");
         }
 
