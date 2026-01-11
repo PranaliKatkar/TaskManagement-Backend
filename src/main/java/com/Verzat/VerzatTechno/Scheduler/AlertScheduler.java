@@ -7,12 +7,12 @@ import com.Verzat.VerzatTechno.Repository.UserRepo;
 import com.Verzat.VerzatTechno.Service.AlertService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Component
@@ -30,8 +30,10 @@ public class AlertScheduler {
     @Scheduled(cron = "0 * * * * *")
     public void executeAlerts() {
 
-        LocalTime now = LocalTime.now().withSecond(0).withNano(0);
-        LocalDate today = LocalDate.now();
+        ZoneId istZone = ZoneId.of("Asia/Kolkata");
+
+        LocalTime now = LocalTime.now(istZone).withSecond(0).withNano(0);
+        LocalDate today = LocalDate.now(istZone);
 
         for (User user : userRepo.findAll()) {
 
