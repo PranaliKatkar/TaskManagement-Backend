@@ -1,21 +1,26 @@
 package com.Verzat.VerzatTechno.Scheduler;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import com.Verzat.VerzatTechno.Entity.Task;
 import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.TaskRepo;
 import com.Verzat.VerzatTechno.Repository.UserRepo;
 import com.Verzat.VerzatTechno.Service.AlertService;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
 @Component
+@EnableScheduling
 public class AlertScheduler {
+
+    @Autowired
+    private UserRepo userRepo;
 
     @Autowired
     private TaskRepo taskRepo;
@@ -23,24 +28,24 @@ public class AlertScheduler {
     @Autowired
     private AlertService alertService;
 
-    @Autowired
-    private UserRepo userRepo;
+    @Scheduled(cron = "0 * * * * *")
+    public void executeAlerts() {
 
-    @Scheduled(cron = "0 * * * * ?", zone = "Asia/Kolkata")
-    public void runUserTimeAlerts() {
-
-        LocalTime now = LocalTime.now().withSecond(0);
+        LocalTime now = LocalTime.now().withSecond(0).withNano(0);
         LocalDate today = LocalDate.now();
-        List<Task> tasks = taskRepo.findAll();
-        List<User> users = userRepo.findByAlertEnabledTrue();
 
-        for (User user : users) {
-            if (user.getAlertTime() != null && user.getAlertTime().equals(now)) {
-                alertService.regenerateAlertsForUser(
-                        tasks,
-                        today,
-                        user.getEmail()
-                );
+        for (User user : userRepo.findAll()) {
+
+            if (!user.isAlertsEnabled()) continue;
+            if (user.getAlertTime() == null) continue;
+
+            if (user.getAlertTime().withSecond(0).withNano(0).equals(now)) {
+
+                List<Task> tasks =
+                        taskRepo.findByFolder_User_EmailAndDueDate(
+                                user.getEmail(), today);
+
+                alertService.sendAlerts(user, tasks);
             }
         }
     }

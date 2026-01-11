@@ -2,8 +2,6 @@ package com.Verzat.VerzatTechno.Service;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,10 +26,8 @@ public class TaskService {
     @Autowired
     private FolderRepo folderRepo;
 
-    @Autowired
-    private AlertService alertService;
-
     public TaskResponse addTask(Long folderId, TaskCreateRequest request) {
+
         Folder folder = folderRepo.findById(folderId)
                 .orElseThrow(() -> new RuntimeException("Folder not found"));
 
@@ -39,16 +35,13 @@ public class TaskService {
         task.setTitle(request.getTitle());
         task.setCompleted(false);
         task.setDescription(request.getDescription());
-        task.setPriority(request.getPriority() != null ? request.getPriority() : "Medium");
+        task.setPriority(
+                request.getPriority() != null ? request.getPriority() : "Medium"
+        );
         task.setDueDate(request.getDueDate());
         task.setFolder(folder);
 
         Task savedTask = taskRepo.save(task);
-
-        alertService.generateAlertForTask(
-                savedTask,
-                LocalDate.now(ZoneId.of("Asia/Kolkata"))
-        );
 
         createFolderIfNotExists(folderId);
         saveTaskToFile(folderId, savedTask);
@@ -57,8 +50,10 @@ public class TaskService {
     }
 
     public List<TaskResponse> getTasks(Long folderId) {
-        if (!folderRepo.existsById(folderId))
+
+        if (!folderRepo.existsById(folderId)) {
             throw new RuntimeException("Folder not found");
+        }
 
         return taskRepo.findByFolder_Id(folderId)
                 .stream()
@@ -67,22 +62,19 @@ public class TaskService {
     }
 
     public TaskResponse markTaskCompleted(Long taskId) {
+
         Task task = taskRepo.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         task.setCompleted(true);
         Task updatedTask = taskRepo.save(task);
 
-        alertService.generateAlertForTask(
-                updatedTask,
-                LocalDate.now(ZoneId.of("Asia/Kolkata"))
-        );
-
         updateTaskFile(updatedTask);
         return new TaskResponse(updatedTask);
     }
 
     public void deleteTask(Long taskId) {
+
         Task task = taskRepo.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 

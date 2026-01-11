@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.Verzat.VerzatTechno.Entity.Alert;
+import com.Verzat.VerzatTechno.Entity.User;
 import com.Verzat.VerzatTechno.Repository.AlertRepository;
+import com.Verzat.VerzatTechno.Repository.UserRepo;
 
 @RestController
 @RequestMapping("/api/alerts")
@@ -16,9 +18,16 @@ public class AlertController {
     @Autowired
     private AlertRepository alertRepo;
 
+    @Autowired
+    private UserRepo userRepo;
+
     @GetMapping("/user/{email}")
     public List<Alert> getUserAlerts(@PathVariable String email) {
-        return alertRepo.findByUserEmailOrderByCreatedAtDesc(email);
+
+        return userRepo.findByEmail(email)
+           //     .filter(User::isAlertEnabled)
+                .map(u -> alertRepo.findByUserEmailOrderByCreatedAtDesc(email))
+                .orElse(List.of());
     }
 
     @DeleteMapping("/{alertId}")

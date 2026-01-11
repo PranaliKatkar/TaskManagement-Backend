@@ -27,7 +27,7 @@ public class AdminController {
                         u.getId(),
                         u.getUsername(),
                         u.getEmail(),
-                        u.getPhoneNumber(),
+                        u.getContactNumber(),
                         "USER"
                 ))
                 .toList();

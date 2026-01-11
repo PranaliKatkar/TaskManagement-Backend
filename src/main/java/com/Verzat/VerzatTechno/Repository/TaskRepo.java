@@ -19,4 +19,6 @@ public interface TaskRepo extends JpaRepository<Task, Long> {
     List<Task> findByDueDateIn(List<LocalDate> dates);
 
     void deleteByFolder_Id(Long folderId);
+
+	List<Task> findByFolder_User_EmailAndDueDate(String email, LocalDate today);
 }

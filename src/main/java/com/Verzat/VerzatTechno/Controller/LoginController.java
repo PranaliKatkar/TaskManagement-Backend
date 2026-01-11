@@ -24,7 +24,7 @@ public class LoginController {
                 savedUser.getId(),
                 savedUser.getUsername(),
                 savedUser.getEmail(),
-                savedUser.getPhoneNumber(),
+                savedUser.getContactNumber(),
                 "USER"
         );
     }
@@ -43,7 +43,7 @@ public class LoginController {
                 dbUser.getId(),
                 dbUser.getUsername(),
                 dbUser.getEmail(),
-                dbUser.getPhoneNumber(),
+                dbUser.getContactNumber(),
                 "USER"
         );
     }
