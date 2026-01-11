@@ -17,7 +17,7 @@ public class User {
     private String password;
     private String contactNumber;
 
-    private boolean alertsEnabled = false;
+    private Boolean alertsEnabled = false;
     private LocalTime alertTime;
     private LocalDate lastAlertSentDate;
 
@@ -27,11 +27,14 @@ public class User {
     public String getPassword() { return password; }
     public String getContactNumber() { return contactNumber; }
 
-    public boolean isAlertsEnabled() { return alertsEnabled; }
+    public boolean isAlertsEnabled() {
+        return Boolean.TRUE.equals(alertsEnabled);
+    }
+
     public LocalTime getAlertTime() { return alertTime; }
     public LocalDate getLastAlertSentDate() { return lastAlertSentDate; }
 
-    public void setAlertsEnabled(boolean alertsEnabled) {
+    public void setAlertsEnabled(Boolean alertsEnabled) {
         this.alertsEnabled = alertsEnabled;
     }
 

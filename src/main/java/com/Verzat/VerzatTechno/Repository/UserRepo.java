@@ -17,5 +17,5 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
 	Optional<User> findByPhoneNumber(String formattedNumber);
 
-	List<User> findByAlertEnabledTrue();
+	List<User> findByAlertsEnabledTrue();
 }
