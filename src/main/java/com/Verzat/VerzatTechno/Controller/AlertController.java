@@ -24,10 +24,14 @@ public class AlertController {
     @GetMapping("/user/{email}")
     public List<Alert> getUserAlerts(@PathVariable String email) {
 
-        return userRepo.findByEmail(email)
-           //     .filter(User::isAlertEnabled)
-                .map(u -> alertRepo.findByUserEmailOrderByCreatedAtDesc(email))
-                .orElse(List.of());
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isAlertsEnabled()) {
+            return List.of();
+        }
+
+        return alertRepo.findByUserEmailOrderByCreatedAtDesc(email);
     }
 
     @DeleteMapping("/{alertId}")

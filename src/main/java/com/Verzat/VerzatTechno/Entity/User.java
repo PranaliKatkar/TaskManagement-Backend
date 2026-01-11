@@ -1,6 +1,7 @@
 package com.Verzat.VerzatTechno.Entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
@@ -16,8 +17,9 @@ public class User {
     private String password;
     private String contactNumber;
 
-    private boolean alertsEnabled;
+    private boolean alertsEnabled = false;
     private LocalTime alertTime;
+    private LocalDate lastAlertSentDate;
 
     public Long getId() { return id; }
     public String getUsername() { return username; }
@@ -27,6 +29,7 @@ public class User {
 
     public boolean isAlertsEnabled() { return alertsEnabled; }
     public LocalTime getAlertTime() { return alertTime; }
+    public LocalDate getLastAlertSentDate() { return lastAlertSentDate; }
 
     public void setAlertsEnabled(boolean alertsEnabled) {
         this.alertsEnabled = alertsEnabled;
@@ -34,6 +37,10 @@ public class User {
 
     public void setAlertTime(LocalTime alertTime) {
         this.alertTime = alertTime;
+    }
+
+    public void setLastAlertSentDate(LocalDate lastAlertSentDate) {
+        this.lastAlertSentDate = lastAlertSentDate;
     }
 
     public void setContactNumber(String contactNumber) {

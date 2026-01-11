@@ -16,7 +16,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Component
-@EnableScheduling
 public class AlertScheduler {
 
     @Autowired
@@ -39,6 +38,9 @@ public class AlertScheduler {
             if (!user.isAlertsEnabled()) continue;
             if (user.getAlertTime() == null) continue;
 
+            if (user.getLastAlertSentDate() != null &&
+                user.getLastAlertSentDate().equals(today)) continue;
+
             if (user.getAlertTime().withSecond(0).withNano(0).equals(now)) {
 
                 List<Task> tasks =
@@ -46,6 +48,9 @@ public class AlertScheduler {
                                 user.getEmail(), today);
 
                 alertService.sendAlerts(user, tasks);
+
+                user.setLastAlertSentDate(today);
+                userRepo.save(user);
             }
         }
     }
